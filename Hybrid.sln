@@ -3,15 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hybrid.CQRS", "Hybrid.CQRS\Hybrid.CQRS.csproj", "{E6F920A3-E9EB-4CFD-8A63-94877E21AC6F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hybrid.CQRS", "Hybrid.CQRS\Hybrid.CQRS.csproj", "{E6F920A3-E9EB-4CFD-8A63-94877E21AC6F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hybrid.Web", "Hybrid.Web\Hybrid.Web.csproj", "{21F97BB7-6E91-48E9-B865-0535FE2133F2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hybrid.Web", "Hybrid.Web\Hybrid.Web.csproj", "{21F97BB7-6E91-48E9-B865-0535FE2133F2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hybrid.Web.UIComponent", "Hybrid.Web.UIComponent\Hybrid.Web.UIComponent.csproj", "{DC067923-B2FF-4286-94D1-EA199FB4C87C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hybrid.Web.UIComponent", "Hybrid.Web.UIComponent\Hybrid.Web.UIComponent.csproj", "{DC067923-B2FF-4286-94D1-EA199FB4C87C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hybrid.Web.Shared", "Hybrid.Web.Shared\Hybrid.Web.Shared.csproj", "{35489CC6-43FC-408A-964C-6855441B3194}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hybrid.Web.Shared", "Hybrid.Web.Shared\Hybrid.Web.Shared.csproj", "{35489CC6-43FC-408A-964C-6855441B3194}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hybrid.Web.FormEngine", "Hybrid.Web.FormEngine\Hybrid.Web.FormEngine.csproj", "{9B15B038-F369-44F7-9BC9-979907BF49F5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hybrid.Web.FormEngine", "Hybrid.Web.FormEngine\Hybrid.Web.FormEngine.csproj", "{9B15B038-F369-44F7-9BC9-979907BF49F5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

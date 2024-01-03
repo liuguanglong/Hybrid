@@ -1,0 +1,32 @@
+﻿@page "/form/{screen}/{key?}/{value?}"
+
+
+<DynamicComponent Type=@typeof(Engine) Parameters=@values />
+
+@code{
+    [Parameter]
+    public string screen { get; set; }
+
+    [Parameter]
+    public string? key { get; set; }
+
+    [Parameter]
+    public string? value { get; set; }
+
+    private Dictionary<String, Object> values = new Dictionary<string, object>();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        values.Clear();
+        values.Add("screen", screen);
+        if(key != null)
+        {
+            values.Add("key", key);
+        }
+        if (value != null)
+        {
+            values.Add("value", value);
+        }
+        await base.OnParametersSetAsync();
+    }
+}

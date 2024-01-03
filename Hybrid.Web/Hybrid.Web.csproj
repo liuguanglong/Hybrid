@@ -17,6 +17,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Hybrid.CQRS\Hybrid.CQRS.csproj" />
+	  <ProjectReference Include="..\Hybrid.Web.FormEngine\Hybrid.Web.FormEngine.csproj" />
 	</ItemGroup>
 	
 	
