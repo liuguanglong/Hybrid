@@ -1,0 +1,120 @@
+﻿@page "/plugin"
+
+@using System.Net.Http.Headers;
+@using System.Runtime.Loader
+@using System.Reflection
+
+@inject IPackageRepository repo;
+@inject Interop DOMinterop;
+
+<PageTitle>Module Manager</PageTitle>
+<AuthorizeView Roles="Manager">
+<Authorized>
+
+<h1>Module Manager</h1>
+
+Register Nuget Package (nupkg file)
+<InputFile OnChange="@(async e => await OnInputFileChange(e))" />
+
+<MudTable T="Package" Items="@packages" Context="package">
+    <HeaderContent>
+            <MudTh>Module</MudTh>
+            <MudTh>Loaded</MudTh>
+            <MudTh>Components</MudTh>
+            <MudTh>Operation</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+                <MudTd DataLabel="Module">@package.Name</MudTd>
+                    <MudTd DataLabel="Loaded">@package.IsLoaded</MudTd>
+                <MudTd DataLabel="Components">
+                    @if (package.IsLoaded)
+                    {
+                        <MudSelect T="String" Margin="Margin.Dense">
+                            @foreach (var c in package.Components)
+                            {
+                                <MudSelectItem Value="@c.Item1">@c.Item2 @c.Item1</MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+                </MudTd>
+                <MudTd DataLabel="Operation">
+                    <MudButton Size="Size.Small" Color="Color.Primary" @onclick="() => Load(package)" Disabled="package.IsLoaded">Load</MudButton>
+                    <MudButton Size="Size.Small" Color="Color.Primary" @onclick="() => Remove(package)">Remove</MudButton>
+                </MudTd>
+    </RowTemplate>
+</MudTable>
+ </Authorized>
+ <NotAuthorized>
+                <MudText Typo="Typo.body1">You are not allowed to see this content</MudText>
+                <br>
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" Link="/login">Login</MudButton>
+</NotAuthorized>
+</AuthorizeView>
+
+@code
+{
+    List<Package> packages = new();
+    private List<Type?> components = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        packages = await repo.GetList();
+    }
+
+    private async Task OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            await repo.Upload(e.File.Name, e.File.OpenReadStream());
+            Snackbar.Add("Plugin is succssfully added!", Severity.Info);
+            packages = await repo.GetList();
+            
+        }
+        catch(Exception ex)
+        {
+            Snackbar.Add("Exception ocurred when trying to add Plugin!", Severity.Info);
+        }
+    }
+
+    private async Task Load(Package package)
+    {
+        await repo.Load(package);
+    }
+
+    private async Task Remove(Package package)
+    {
+        try
+        {
+            await repo.Delete(package);
+            Snackbar.Add("Plugin is succssfully removed!", Severity.Info);
+            packages = await repo.GetList();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Exception ocurred when trying to remove Plugin!", Severity.Info);
+        }
+    }
+
+    private void LoadComponent(ChangeEventArgs changeEventArgs, Package package)
+    {
+        string component = changeEventArgs.Value?.ToString() ?? "";
+
+        components.Add(package.Assembly?.GetType(component));
+
+        foreach (var asset in package.Assets)
+        {
+            var id = package.Name + asset.Item2.Substring(0, asset.Item2.LastIndexOf("."));
+
+            if (asset.Item1 == "css")
+            {
+                if (File.Exists($"/_content/{package.Name}/{asset.Item2}"))
+                    DOMinterop.IncludeLink(id, $"/_content/{package.Name}/{asset.Item2}");
+            }
+            else if (asset.Item1 == "js")
+            {
+                if (File.Exists($"/_content/{package.Name}/{asset.Item2}"))
+                    DOMinterop.IncludeScript(id, $"/_content/{package.Name}/{asset.Item2}");
+            }
+        }
+    }
+}

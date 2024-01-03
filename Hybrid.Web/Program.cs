@@ -2,6 +2,7 @@ using Blazored.LocalStorage;
 using Hybrid.CQRS;
 using Hybrid.Web;
 using Hybrid.Web.Auth;
+using Hybrid.Web.PlugIn;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -50,5 +51,7 @@ builder.Services.AddScoped(i =>
                 new CommandService(urlGraphql, urlRestful, key)
             );
 
+builder.Services.AddScoped<IPackageRepository, PackageRepository>();
+builder.Services.AddScoped<Interop>();
 
 await builder.Build().RunAsync();

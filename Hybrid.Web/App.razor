@@ -1,4 +1,7 @@
-﻿﻿<CascadingAuthenticationState>
+﻿@inject IPackageRepository repo;
+@inject Interop DOMinterop;
+
+<CascadingAuthenticationState>
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
             <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" >
@@ -15,3 +18,29 @@
         </NotFound>
     </Router>
 </CascadingAuthenticationState>
+
+@code
+{
+    List<Package> packages = new();
+    protected override async Task OnInitializedAsync()
+    {
+        packages = await repo.GetList();
+        foreach (var package in packages)
+        {
+            await repo.Load(package);
+            foreach (var asset in package.Assets)
+            {
+                var id = package.Name + asset.Item2.Substring(0, asset.Item2.LastIndexOf("."));
+
+                if (asset.Item1 == "css")
+                {
+                    await DOMinterop.IncludeLink(id, $"/_content/{package.Name}/{asset.Item2}");
+                }
+                else if (asset.Item1 == "js")
+                {
+                    await DOMinterop.IncludeScript(id, $"/_content/{package.Name}/{asset.Item2}");
+                }
+            }
+        }
+    }
+}
