@@ -1,10 +1,7 @@
 ﻿using Supabase.Storage;
 using Supabase.Storage.Interfaces;
 using System.Diagnostics;
-using System.IO;
 using System.IO.Compression;
-using System.Net.Http.Json;
-using System.Net.Sockets;
 using System.Runtime.Loader;
 using System.Xml;
 
@@ -127,7 +124,8 @@ namespace Hybrid.Web.PlugIn
                 {
                     Console.WriteLine($"No symbols loaded for {package.Name}");
                 }
-                package.Components = assembly.GetExportedTypes().Select(s => (s.FullName ?? "", s.BaseType?.Name ?? "")).ToList();
+                package.Components = assembly.GetExportedTypes().Where(x=>x.BaseType?.Name == "ComponentBase")
+                    .Select(s => (s.FullName ?? "", s.BaseType?.Name ?? "")).ToList();
                 package.IsLoaded = true;
             }
             catch (Exception ex)

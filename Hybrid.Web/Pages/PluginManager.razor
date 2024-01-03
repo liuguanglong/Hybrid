@@ -1,12 +1,9 @@
 ﻿@page "/plugin"
-
 @using System.Net.Http.Headers;
 @using System.Runtime.Loader
 @using System.Reflection
-
 @inject IPackageRepository repo;
 @inject Interop DOMinterop;
-
 
 <PageTitle>Module Manager</PageTitle>
 <AuthorizeView Roles="Manager">
@@ -33,7 +30,7 @@ Register Nuget Package (nupkg file)
                         <MudSelect T="String" Margin="Margin.Dense">
                             @foreach (var c in package.Components)
                             {
-                                <MudSelectItem Value="@c.Item1">@c.Item2 @c.Item1</MudSelectItem>
+                                <MudSelectItem Value="@c.Item1">@c.Item1</MudSelectItem>
                             }
                         </MudSelect>
                     }
