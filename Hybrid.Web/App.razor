@@ -1,5 +1,8 @@
-﻿@inject IPackageRepository repo;
+﻿@using Hybrid.Web.Service;
+
+@inject IPackageRepository repo;
 @inject Interop DOMinterop;
+@inject PluginStateService pluginService;
 
 <CascadingAuthenticationState>
     <Router AppAssembly="@typeof(App).Assembly">
@@ -21,7 +24,7 @@
 
 @code
 {
-    List<Package> packages = new();
+    private List<Package> packages = new();
     protected override async Task OnInitializedAsync()
     {
         packages = await repo.GetList();
@@ -41,6 +44,7 @@
                     await DOMinterop.IncludeScript(id, $"/_content/{package.Name}/{asset.Item2}");
                 }
             }
+            pluginService.AddPackage(package);
         }
     }
 }

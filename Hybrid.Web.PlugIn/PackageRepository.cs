@@ -81,7 +81,8 @@ namespace Hybrid.Web.PlugIn
 
         public async Task<bool> Delete(Package package)
         {
-            if (package.Name != null && CheckLoaded(package.Name)) return true;
+            //if (package.Name != null && CheckLoaded(package.Name)) return true;
+
             var bucket = _storage.From(BucketName);
             try
             {

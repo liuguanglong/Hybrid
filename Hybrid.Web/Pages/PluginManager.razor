@@ -7,6 +7,7 @@
 @inject IPackageRepository repo;
 @inject Interop DOMinterop;
 
+
 <PageTitle>Module Manager</PageTitle>
 <AuthorizeView Roles="Manager">
 <Authorized>
@@ -51,70 +52,3 @@ Register Nuget Package (nupkg file)
 </NotAuthorized>
 </AuthorizeView>
 
-@code
-{
-    List<Package> packages = new();
-    private List<Type?> components = new();
-
-    protected override async Task OnInitializedAsync()
-    {
-        packages = await repo.GetList();
-    }
-
-    private async Task OnInputFileChange(InputFileChangeEventArgs e)
-    {
-        try
-        {
-            await repo.Upload(e.File.Name, e.File.OpenReadStream());
-            Snackbar.Add("Plugin is succssfully added!", Severity.Info);
-            packages = await repo.GetList();
-            
-        }
-        catch(Exception ex)
-        {
-            Snackbar.Add("Exception ocurred when trying to add Plugin!", Severity.Info);
-        }
-    }
-
-    private async Task Load(Package package)
-    {
-        await repo.Load(package);
-    }
-
-    private async Task Remove(Package package)
-    {
-        try
-        {
-            await repo.Delete(package);
-            Snackbar.Add("Plugin is succssfully removed!", Severity.Info);
-            packages = await repo.GetList();
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add("Exception ocurred when trying to remove Plugin!", Severity.Info);
-        }
-    }
-
-    private void LoadComponent(ChangeEventArgs changeEventArgs, Package package)
-    {
-        string component = changeEventArgs.Value?.ToString() ?? "";
-
-        components.Add(package.Assembly?.GetType(component));
-
-        foreach (var asset in package.Assets)
-        {
-            var id = package.Name + asset.Item2.Substring(0, asset.Item2.LastIndexOf("."));
-
-            if (asset.Item1 == "css")
-            {
-                if (File.Exists($"/_content/{package.Name}/{asset.Item2}"))
-                    DOMinterop.IncludeLink(id, $"/_content/{package.Name}/{asset.Item2}");
-            }
-            else if (asset.Item1 == "js")
-            {
-                if (File.Exists($"/_content/{package.Name}/{asset.Item2}"))
-                    DOMinterop.IncludeScript(id, $"/_content/{package.Name}/{asset.Item2}");
-            }
-        }
-    }
-}

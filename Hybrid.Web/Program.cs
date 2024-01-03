@@ -3,6 +3,7 @@ using Hybrid.CQRS;
 using Hybrid.Web;
 using Hybrid.Web.Auth;
 using Hybrid.Web.PlugIn;
+using Hybrid.Web.Service;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -53,5 +54,6 @@ builder.Services.AddScoped(i =>
 
 builder.Services.AddScoped<IPackageRepository, PackageRepository>();
 builder.Services.AddScoped<Interop>();
+builder.Services.AddSingleton<PluginStateService>(new PluginStateService());
 
 await builder.Build().RunAsync();
