@@ -1,0 +1,526 @@
+﻿@page "/form/{screen}/{key?}/{value?}"
+@using System.Text.Json;
+@using Hybrid.Web.UIComponent
+@using Hybrid.Web.Shared
+@using Hybrid.CQRS
+
+@inject HttpClient Http
+@inject CommandService serviceCommand;
+
+@if (_bLoaded == true && (String.IsNullOrEmpty(screenName) == false))
+{
+    <DynamicComponent Type=@Util.getType(screenName) Parameters=@values/>
+}
+else
+{
+   <MudProgressCircular Color="Color.Primary" Indeterminate="true"/>
+}
+
+@code {
+    [Parameter]
+    public string screen { get; set; }
+
+    [Parameter]
+    public string? key { get; set; }
+
+    [Parameter]
+    public string? value { get; set; }
+
+    Func<String, Dictionary<String, Object>, Task<Dictionary<String, Object>>> FireDomainEvent;
+
+    private bool _bLoaded = false;
+    private String screenName;
+    private Dictionary<String, Object> values = new Dictionary<string, object>();
+    private Dictionary<String, Object> data = new Dictionary<string, object>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        FireDomainEvent = (String s, Dictionary<String, Object> p) =>
+            HandleDomainEvent(s, p);
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        //Get Screen Definition
+        Dictionary<String, Object> queryScreen = new Dictionary<string, object>();
+        if (String.IsNullOrEmpty(screen) == false)
+        {
+            queryScreen.Add("name", screen);
+        }
+        var screenDefine = await serviceCommand.query("queryScreen", queryScreen);
+        Dictionary<String, Object> screenInfo = screenDefine.ToScreenData();
+
+        Boolean debugMode = screenInfo.getValue<Boolean>("screen[0].debug");
+        screenName = screenInfo.getValue<String>("screen[0].template_name");
+        if(String.IsNullOrEmpty(screenName))
+        {
+            Snackbar.Add("Screen is not find! Screen Name: " + screen);
+            await base.OnParametersSetAsync();
+            return;
+        }
+
+        var datasource = screenInfo.getValue<String>("screen[0].datasource_name");
+
+        //Get Screen Data
+        Dictionary<String, Object> queryParams = new Dictionary<string, object>();
+        if (key != null)
+        {
+            queryParams.Add(key, value);
+        }
+        values.Clear();
+        var ret = await serviceCommand.query(datasource, queryParams);
+        if (ret != null)
+        {
+            data = ret.ToScreenData();
+        }
+        else
+            Snackbar.Add($"Exception when trying to load data. DataSource: {datasource} Params:{key}-{value}", Severity.Error);
+
+        //Build Screen
+        BcScreen sceen = new BcScreen(screenInfo);
+        values["Screen"] = buildScreen(sceen, data);
+
+        if (debugMode == true)
+        {
+            var options = new JsonSerializerOptions
+                {
+                    WriteIndented = true
+                };
+            values["Data"] = JsonSerializer.Serialize(data, options);
+        }
+        else
+        {
+            if(values.ContainsKey("Data"))
+                values.Remove("Data");
+        }
+
+        _bLoaded = true;
+        await base.OnParametersSetAsync();
+    }
+
+    private async Task CallBack(BcButton info, Dictionary<String, Object> data)
+    {
+        if(String.IsNullOrEmpty(info.Event.ConfirmMessage) == false)
+        {
+            bool? result = await DialogService.ShowMessageBox(
+               "Warning",
+               info.Event.ConfirmMessage,
+               yesText: "OK", cancelText: "Cancel");
+            if (result == null || result == false)
+            {
+                return;
+            }
+        }
+
+        if (String.IsNullOrEmpty(info.Event.EventName) && (String.IsNullOrEmpty(info.Event.NavigateURL.Template)))
+        {
+            String requestBody = JsonSerializer.Serialize(data);
+            Snackbar.Add("Request Data:" + requestBody);
+        }
+
+        if(String.IsNullOrEmpty(info.Event.EventName) == false)
+        {
+            try
+            {
+                var ret = await HandleDomainEvent(info.Event.EventName, data);
+                if ((String)ret["StatusCode"] == "ok")
+                {
+                    String domainId = ret.getValue<String>("Data.id");
+                    Snackbar.Add($"{info.Event.SuccessMessage} Object Id = {domainId}");
+                }
+                else
+                {
+                    Snackbar.Add($"{info.Event.ExceptionMessage} Exception Info:{ret.getValue<String>("Message")}", Severity.Error);
+                }
+            }catch(Exception ex)
+            {
+                Snackbar.Add($"{info.Event.ExceptionMessage} Exception Info:{ex.Message}", Severity.Error);
+            }
+        }
+
+        if(info.Event.NavigateURL != null)
+        {
+            String href = data.buildParamsString(info.Event.NavigateURL.Template, info.Event.NavigateURL.ParamsDataPath);
+            Navigate(href);
+        }
+    }
+
+    private async Task Navigate(String targetUrl)
+    {
+        Navigation.NavigateTo(targetUrl);
+    }
+
+    private async Task<Dictionary<String, Object>> HandleDomainEvent(String domainEvent, Dictionary<String, Object> param)
+    {
+        var retsult = await serviceCommand.fireDomainEvent(domainEvent, param);
+        return retsult.ToDictionary();
+    }
+
+    private async Task Save()
+    {
+        Type type = typeof(MudTextField<>).MakeGenericType(typeof(String));
+
+        //Todo
+        var json = JsonSerializer.Serialize(data);
+        Snackbar.Add(json);
+    }
+
+    public ScreenStub buildScreen(BcScreen info, Dictionary<String, Object> data)
+    {
+        ScreenStub screen = new ScreenStub { Name = "", Label = "" };
+        foreach (var e in info.UIParts)
+        {
+            if(e.Value.mainLevel == true)
+                screen.Parts.Add(e.Key, buildPart(e.Value, data));
+        }
+        if (info.BreadcrumbItems != null)
+        {
+            screen.Breadcrumb = buildBreadcrub(info.BreadcrumbItems, data);
+        }
+
+        return screen;
+    }
+
+    public RenderFragment buildButtonGroup(String groupName,IEnumerable<BcButton> groups, Dictionary<String, Object> data)
+    {
+        RenderFragment Control = __builder =>
+       {
+           <MudMenu>
+               <ActivatorContent>
+                   <MudButton Variant="Variant.Text" Color="Color.Primary">@groupName</MudButton>
+               </ActivatorContent>
+               <ChildContent>
+                   @foreach(var m in groups)
+                   {
+                       <MudMenuItem OnClick=@(()=>CallBack(m,data))>@m.Label</MudMenuItem>
+                   }
+               </ChildContent>
+           </MudMenu>
+       };
+
+        return Control;
+    }
+
+    public Dictionary<string, RenderFragment> buildButtons(BcButton[] buttons, Dictionary<String, Object> data)
+    {
+        Dictionary<string, RenderFragment> dicButtons = new Dictionary<string, RenderFragment>();
+        var group = buttons.Where(x=>String.IsNullOrEmpty(x.Parent) == false).GroupBy(x => x.Parent);
+        foreach(var g in group)
+        {
+            dicButtons.Add(g.Key, this.buildButtonGroup(g.Key,g, data));
+        }
+
+        foreach(var b in buttons.Where(x=> String.IsNullOrEmpty(x.Parent)))
+        {
+            if(b!=null)
+                dicButtons.Add(b.Name, this.build(b, data));
+        }
+        return dicButtons;
+    }
+
+    public RenderFragment buildBreadcrub(BcBreadcrumb[] items, Dictionary<String, Object> data)
+    {
+        List<BreadcrumbItem> _items = new List<BreadcrumbItem>();
+        foreach (var item in items)
+        {
+            if (item == null)
+                continue;
+            var text = data.buildParamsString(item.Text.Template, item.Text.ParamsDataPath);
+            var href = data.buildParamsString(item.Href.Template, item.Href.ParamsDataPath);
+            _items.Add(new BreadcrumbItem(text, href, item.Disabled, item.Icon));
+        }
+
+        RenderFragment Control = __builder =>
+        {
+            <MudBreadcrumbs Items="_items">
+                <ItemTemplate Context="item">
+                    <MudLink Href="@item.Href">@item.Text</MudLink>
+                </ItemTemplate>
+            </MudBreadcrumbs>
+        };
+
+        return Control;
+    }
+
+    public PartStub buildPart(BcPart part, Dictionary<String, Object> data)
+    {
+        PartStub screenPart = new PartStub();
+        screenPart.Label = part.Label;
+        screenPart.Height = part.Height;
+        screenPart.Width = part.Width;
+        screenPart.Index = part.Index;
+
+        Dictionary<String, RenderFragment> dic = new Dictionary<string, RenderFragment>();
+        foreach (var e in part.Elements)
+        {
+            if (e == null)
+                continue;
+
+            if (e is BcList == false)
+            {
+                screenPart.Elements.Add(e.Name, new UIControlStub(e.Name, e.Label, buildControl(e, data)));
+            }
+            else
+            {
+                screenPart.Elements.Add(e.Name, buildList((BcList)e, data));
+            }
+        }
+
+        if (part.Buttons != null)
+        {
+            screenPart.Buttons = buildButtons(part.Buttons, data);
+        }
+
+
+        return screenPart;
+    }
+
+    public ListPartStub buildList(BcList info, Dictionary<String, Object> data)
+    {
+        var items = data.getList(info.DataPath);
+        List<Dictionary<String, UIControlStub>> list = new List<Dictionary<string, UIControlStub>>();
+        foreach (var item in items)
+        {
+            Dictionary<String, UIControlStub> dic = new Dictionary<string, UIControlStub>();
+            foreach (var e in info.part.Elements)
+            {
+                if (e == null)
+                    continue;
+
+                if (e is BcList == false)
+                {
+                    dic.Add(e.Name, new UIControlStub(e.Name, e.Label, buildControl(e, item)));
+                }
+            }
+            list.Add(dic);
+        }
+
+        var listpart = new ListPartStub(info.Name, info.Label, list);
+        listpart.PageCount = info.PageCount;
+        listpart.PartWidth = info.part.Width;
+        listpart.PartHeight = info.part.Height;
+
+        listpart.Width = info.Width;
+        listpart.Height = info.Height;
+
+        if (info.part.Buttons != null)
+        {
+            listpart.Buttons = buildButtons(info.part.Buttons, data);
+        }
+
+        return listpart;
+    }
+
+    public RenderFragment buildControl(UIElement info, Dictionary<String, Object> data)
+    {
+        switch (info)
+        {
+            case BcField field:
+                return this.build(field, data);
+            case BcInput input:
+                return this.build(input, data);
+            case BcSelect select:
+                return this.build(select, data);
+            case BcButton button:
+                return this.build(button, data);
+            case BcLink link:
+                return this.build(link, data);
+            case BcCheckBox checkbox:
+                return this.build(checkbox, data);
+            case BcTree tree:
+                return this.build(tree, data);
+            default:
+                RenderFragment error = __builder =>
+            {
+                <MudText>Control is not supported!</MudText>
+            };
+                return error;
+        }
+    }
+
+    public RenderFragment build(BcTree tree, Dictionary<String,Object> data)
+    {
+      RenderFragment Control = __builder =>
+      {
+          var items = data.getList(tree.DataPath);
+         items.Sort((x, y) => ((int)x["index"]).CompareTo((int)y["index"]));
+
+          if (items !=null)
+          {
+              var TreeItems = items.ToTreeItem();
+              <MudPaper Width="600px" Elevation="0">
+                    <MudTreeView Items="TreeItems" ExpandOnClick="true" Hover="true">
+                    <ItemTemplate>
+                            <MudTreeViewItem Items="@context.TreeItems" Value="@context">
+                                <Content>
+                                    <div style="display: grid; grid-template-columns: 1fr auto; align-items: center; width: 100%">                                    
+                                        <MudText>@(context.data.buildParamsString(tree.NodeContent.Template, tree.NodeContent.ParamsDataPath))</MudText>
+                                         <div style="justify-self: end;">
+                                                <MudLink Href=@(context.data.buildParamsString(tree.NodeLink.Template, tree.NodeLink.ParamsDataPath))>Detail</MudLink>
+                                        </div>
+                                    </div>
+                                </Content>
+                        </MudTreeViewItem>
+                    </ItemTemplate>
+                </MudTreeView>
+                </MudPaper>
+          }
+      };
+
+      return Control;
+    }
+
+    public RenderFragment build(BcCheckBox info, Dictionary<String, Object> data)
+    {
+        RenderFragment Control = __builder =>
+        {
+            if (info.DataType == UIDataFieldType.Boolean)
+            {
+                <MudCheckBox T="Boolean" Checked=@(data.getValue<Boolean>(info.DataPath)) Label=@info.Label  
+                    CheckedChanged=@(v=>data.changeValue(info.DataPath,v))></MudCheckBox>
+            }
+        };
+
+        return Control;
+    }
+
+    public RenderFragment build(BcSelect info, Dictionary<String, Object> data)
+    {
+        RenderFragment Control = __builder =>
+        {
+            switch (info.DataType)
+            {
+                case UIDataFieldType.String:
+                    <MudSelect T="String" Label=@info.Label Value=@(data.getValue<String>(info.DataPath)) Margin="Margin.Dense"
+                        ValueChanged=@(v=>data.changeValue(info.DataPath,v))>
+                        @foreach (var op in ((List<Dictionary<String, Object>>)data.getList(info.OptionDataPath)))
+                        {
+                            @if (info.SelectKey == true)
+                            {
+                                <MudSelectItem T="string" Value=@(op.getValue<String>("key"))>@(op.getValue<String>("value"))</MudSelectItem>
+                            }
+                            else
+                            {
+                                <MudSelectItem T="string" Value=@(op.getValue<String>("value"))>@(op.getValue<String>("value"))</MudSelectItem>
+                            }
+                        }
+                    </MudSelect>
+                    break;
+                case UIDataFieldType.Int32:
+                    <MudTextField T="Int32" Value=@(data.getValue<Int32>(info.DataPath)) Label=@info.Label Variant="Variant.Text" ReadOnly=true>
+                    </MudTextField>
+                    break;
+                case UIDataFieldType.Int64:
+                    <MudTextField T="Int64" Value=@(data.getValue<Int64>(info.DataPath)) Label=@info.Label Variant="Variant.Text" ReadOnly=true>
+                    </MudTextField>
+                    break;
+                case UIDataFieldType.Double:
+                    <MudTextField T="Double" Value=@(data.getValue<Double>(info.DataPath)) Label=@info.Label Variant="Variant.Text" ReadOnly=true>
+                    </MudTextField>
+                    break;
+                case UIDataFieldType.Guid:
+                    @if (data.getValue<String>(info.DataPath) == "00000000-0000-0000-0000-000000000000")
+                    {
+                        data.changeValue(info.DataPath, Guid.NewGuid().ToString());
+                    }
+                    <MudTextField T="String" Value=@(data.getValue<String>(info.DataPath)) Label=@info.Label Variant="Variant.Text" ReadOnly=true>
+                    </MudTextField>
+                    break;
+            }
+        };
+        return Control;
+    }
+    public RenderFragment build(BcField info, Dictionary<String, Object> data)
+    {
+        RenderFragment Control = __builder =>
+        {
+            switch (info.DataType)
+            {
+                case UIDataFieldType.String:
+                    <MudTextField T="String" Lines="@info.Lines" Margin="Margin.Dense" Value=@(data.getValue<String>(info.DataPath)) Label=@info.Label Variant="Variant.Text" ReadOnly=true>
+                    </MudTextField>
+                    break;
+                case UIDataFieldType.Int32:
+                    <MudTextField T="Int32" Margin="Margin.Dense"  Value=@(data.getValue<Int32>(info.DataPath)) Label=@info.Label Variant="Variant.Text" ReadOnly=true>
+                    </MudTextField>
+                    break;
+                case UIDataFieldType.Int64:
+                    <MudTextField T="Int64" Margin="Margin.Dense" Value=@(data.getValue<Int64>(info.DataPath)) Label=@info.Label Variant="Variant.Text" ReadOnly=true>
+                    </MudTextField>
+                    break;
+                case UIDataFieldType.Double:
+                    <MudTextField T="Double" Margin="Margin.Dense" Value=@(data.getValue<Double>(info.DataPath)) Label=@info.Label Variant="Variant.Text" ReadOnly=true>
+                    </MudTextField>
+                    break;
+                case UIDataFieldType.Boolean:
+                    <MudTextField T="bool" Margin="Margin.Dense" Value=@(data.getValue<bool>(info.DataPath)) Label=@info.Label Variant="Variant.Text" ReadOnly=true>
+                    </MudTextField>
+                    break;
+                case UIDataFieldType.Guid:
+                    @if (data.getValue<String>(info.DataPath) == "00000000-0000-0000-0000-000000000000")
+                    {
+                        data.changeValue(info.DataPath, Guid.NewGuid().ToString());
+                    }
+                    <MudField Label=@info.Label Margin="Margin.Dense" Variant="Variant.Text">@(data.getValue<String>(info.DataPath))</MudField>
+                    break;
+            }
+        };
+        return Control;
+    }
+
+    public RenderFragment build(BcInput info, Dictionary<String, Object> data)
+    {
+        RenderFragment Control = __builder =>
+        {
+            switch (info.DataType)
+            {
+                case UIDataFieldType.String:
+                    <MudTextField T="String" Lines="@info.Lines" Margin="Margin.Dense" Value=@(data.getValue<String>(info.DataPath)) ValueChanged=@(v=>data.changeValue(info.DataPath,v))
+              Label=@info.Label Variant="Variant.Text">
+                    </MudTextField>
+                    break;
+                case UIDataFieldType.Int32:
+                    <MudTextField T="Int32" Margin="Margin.Dense" Value=@(data.getValue<Int32>(info.DataPath)) ValueChanged=@(v=>data.changeValue(info.DataPath,v))
+              Label=@info.Label Variant="Variant.Text">
+                    </MudTextField>
+                    break;
+                case UIDataFieldType.Int64:
+                    <MudTextField T="Int64" Margin="Margin.Dense" Value=@(data.getValue<Int64>(info.DataPath)) ValueChanged=@(v=>data.changeValue(info.DataPath,v))
+              Label=@info.Label Variant="Variant.Text">
+                    </MudTextField>
+                    break;
+                case UIDataFieldType.Double:
+                    <MudTextField T="Double" Margin="Margin.Dense" Value=@(data.getValue<Double>(info.DataPath)) ValueChanged=@(v=>data.changeValue(info.DataPath,v))
+              Label=@info.Label Variant="Variant.Text">
+                    </MudTextField>
+                    break;
+            }
+        };
+
+        return Control;
+    }
+
+    public RenderFragment build(BcButton info, Dictionary<String, Object> data)
+    {
+        RenderFragment Control = __builder =>
+       {
+           <MudButton Variant="Variant.Text" Color="Color.Primary"
+               OnClick=@(()=>CallBack(info,data))>@info.Label</MudButton>
+       };
+
+        return Control;
+    }
+
+    public RenderFragment build(BcLink info, Dictionary<String, Object> data)
+    {
+        RenderFragment Control = __builder =>
+       {
+           String href = data.buildParamsString(info.Href.Template,info.Href.ParamsDataPath);
+           <MudLink Href=@href>@info.Label</MudLink>
+       };
+
+        return Control;
+    }
+
+
+}

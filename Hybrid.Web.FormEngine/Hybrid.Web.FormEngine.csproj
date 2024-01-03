@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0" />
+	  <PackageReference Include="Mudblazor" Version="6.12.0" />
+	  <PackageReference Include="System.Linq.Dynamic.Core" Version="1.3.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Hybrid.CQRS\Hybrid.CQRS.csproj" />
+    <ProjectReference Include="..\Hybrid.Web.Shared\Hybrid.Web.Shared.csproj" />
+    <ProjectReference Include="..\Hybrid.Web.UIComponent\Hybrid.Web.UIComponent.csproj" />
+  </ItemGroup>
+
+</Project>

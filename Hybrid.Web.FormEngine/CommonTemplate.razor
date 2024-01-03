@@ -1,0 +1,139 @@
+﻿@using Hybrid.Web.UIComponent
+
+<AuthorizeView Roles=@Screen.AuthorizeRole>
+<Authorized>
+@Screen.Breadcrumb
+@foreach (var p in Screen.Parts.OrderBy(x => x.Value.Index))
+{
+    <MudPaper Class=" d-flex flex-column gap-4" Width=@p.Value.Width Height=@p.Value.Height Elevation="0">
+        <MudField Label=@p.Value.Label Variant="Variant.Outlined">
+        <MudPaper Class="d-flex flex-row flex-grow-1 gap-4" Elevation="0">
+        @foreach (var v in p.Value.Buttons)
+        {
+            @v.Value
+        }
+        </MudPaper>
+        <MudCard>
+            <MudCardContent>
+            @foreach(var e in p.Value.Elements)
+            {
+                @if (@e.Value is UIControlStub)
+                {
+                    @e.Value.Render()
+                }
+                else
+                {
+                    @buildListPartControl((ListPartStub)e.Value)
+                }
+            }
+            </MudCardContent>
+        </MudCard>
+        </MudField>
+    </MudPaper>
+}
+@if (String.IsNullOrEmpty(Data) == false)
+{
+    <MudExpansionPanels>
+        <MudExpansionPanel Text="Screen Data">
+            <MudTextField T="string" Label="Screen Data" Variant="Variant.Text" Text="@Data" Lines="20" />
+        </MudExpansionPanel>
+    </MudExpansionPanels>
+}
+</Authorized>
+      <NotAuthorized>
+        <MudText Typo="Typo.body1">You are not allowed to access this form!</MudText>
+        <MudText Typo="Typo.body1">Please login!</MudText>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Link="/login">Login</MudButton>
+      </NotAuthorized>
+</AuthorizeView>
+@code {
+
+
+    [Parameter]
+    public ScreenStub Screen { get; set; }
+
+    [Parameter]
+    public String? Data { get; set; }
+
+        public RenderFragment buildListPartControl(ListPartStub info)
+        {
+            RenderFragment Control = __builder =>
+            {
+                @foreach (var v in info.Buttons)
+                {
+                    @v.Value
+                }
+
+            <MudPaper Class="d-flex flex-column gap-1" Width=@info.Width Height=@info.Height Elevation="0">
+                <MudPaper Class="d-flex flex-wrap  gap-x-2 gap-y-2" Elevation="0">
+                    @{
+                        int start = (info.PageIndex - 1) * info.PageCount;
+                        int end = (info.PageIndex) * info.PageCount;
+                        if (end > info.Elements.Count)
+                            end = info.Elements.Count;
+
+                        @for(int i = start; i < end; i++)
+                        {
+                            var dic = info.Elements[i];
+                            <MudPaper Class="d-flex flex-column gap-1" Height=@info.PartHeight Width=@info.PartWidth  Elevation="0" >
+                            <MudCard>
+                                <MudCardContent>
+                                    @foreach (var f in dic.Values)
+                                        @f.Render()
+                                    </MudCardContent>
+                                </MudCard>
+                            </MudPaper>
+                            }
+                }
+                </MudPaper>
+                <MudPagination Color="Color.Primary" Count="@info.getCount()" @bind-Selected="@info.PageIndex"/>
+            </MudPaper>
+        };
+
+        return Control;        
+    }
+
+    private String _searchString;
+
+    public RenderFragment buildTableControl(ListPartStub info)
+    {
+        RenderFragment Control = __builder =>
+        {
+            //<MudTable Items="@info.Elements" Dense="true" Hover="true" Bordered="true" Striped="true" Filter="FilterFunc1" Context="user">
+            //    <ToolBarContent>
+            //        <div class="d-flex justify-start align-end">
+            //            @foreach (var v in info.Buttons)
+            //            {
+            //                @v.Value
+            //            }
+            //        </div>
+            //        <MudSpacer />
+            //        <MudTextField @bind-Value="_searchString" FullWidth=false Placeholder="Search for User Name, Email" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Small"></MudTextField>
+            //    </ToolBarContent>
+            //    <HeaderContent>
+            //        <MudTh>Id</MudTh>
+            //        <MudTh>User Name</MudTh>
+            //        <MudTh>Email</MudTh>
+            //        <MudTh>Email Confirmed</MudTh>
+            //        <MudTh>Oprerations</MudTh>
+            //    </HeaderContent>
+            //    <RowTemplate>
+            //        <MudTd DataLabel="Id">@user.Id.Substring(0, 5) ...</MudTd>
+            //        <MudTd DataLabel="User Name">@user.UserName</MudTd>
+            //        <MudTd DataLabel="Email">@user.Email</MudTd>
+            //        <MudTd DataLabel="Email Confirmed">@user.EmailConfirmed</MudTd>
+            //        <MudTd DataLabel="Operations">
+            //            <MudButton Variant="Variant.Text" Color="Color.Secondary" Size="Size.Small" @onclick="(() => EditUser(user))">Edit</MudButton>
+            //            <MudButton Variant="Variant.Text" Color="Color.Secondary" Size="Size.Small" @onclick="(() => DeleteUser(user))">Delete</MudButton>
+            //        </MudTd>
+            //    </RowTemplate>
+            //    <PagerContent>
+            //        <MudTablePager />
+            //    </PagerContent>
+            //</MudTable>
+
+        };
+
+        return Control;
+    }
+}
