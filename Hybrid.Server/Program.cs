@@ -1,9 +1,12 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json.Linq;
 using Supabase.Gotrue;
 using Supabase.Gotrue.Interfaces;
 using System;
+using System.Security.Claims;
 using System.Text;
+using System.Text.Json.Nodes;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,22 +38,39 @@ builder.Services.AddScoped<IGotrueAdminClient<User>>(
    provider => amdinClient
 );
 
-builder.Services.AddAuthentication(o =>
-                {
-                    o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                }).AddJwtBearer(o =>
+var iss = builder.Configuration["JWT:ValidIssuer"].ToString();
+var key = builder.Configuration["JWT:Secret"].ToString();
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o =>
                 {
                     o.TokenValidationParameters = new TokenValidationParameters()
                     {
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"])),
-                        ValidAudience = builder.Configuration["Jwt:ValidAudience"],
-                        ValidIssuer = builder.Configuration["Jwt:ValidIssuer"],
-                        // When receiving a token, check that we've signed it.
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
+                        ValidAudience = "authenticated",
+                        ValidIssuer = iss,
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
                         ValidateIssuerSigningKey = true,
-                        // When receiving a token, check that it is still valid.
-                        ValidateLifetime = true
+                        ValidateLifetime = true                        
                     };
+                    o.Events = new JwtBearerEvents()
+                    {
+                        OnTokenValidated = context =>
+                        {
+                            // Find claim identity attached to principal.
+                            var claim = (Claim)context.Principal.Claims.Where(x=>x.Type=="app_metadata").FirstOrDefault();
+                            JObject role = JObject.Parse(claim.Value);
+                            JArray roles = (JArray)role.GetValue("role");
+                            var claims = new List<Claim>();
+                            foreach (var r in roles)
+                                claims.Add(new Claim(ClaimsIdentity.DefaultRoleClaimType, r.Value<String>()));
+                            var appIdentity = new ClaimsIdentity(claims);
+                            context.Principal.AddIdentity(appIdentity);
+
+                            return Task.CompletedTask;
+                        }
+                    }
+                    ;
                 }
               );
 
