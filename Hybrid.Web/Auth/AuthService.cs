@@ -57,6 +57,7 @@ namespace Hybrid.Web.Auth
 
         public async Task<Supabase.Gotrue.User?> GetUser()
         {
+            //var user = await _client.Auth.GetUser("jwt");
             var session = await _client.Auth.RetrieveSessionAsync();
             return session?.User;
         }

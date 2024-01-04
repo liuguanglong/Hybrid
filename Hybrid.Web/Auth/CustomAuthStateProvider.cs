@@ -39,7 +39,7 @@ namespace Hybrid.Web.Auth
             {
                 identity = new ClaimsIdentity(ParseClaimsFromJwt(_client.Auth.CurrentSession.AccessToken), "jwt");
                 var tokenString = _client.Auth.CurrentSession.AccessToken.Replace("'", "");
-                await _localStorage.SetItemAsStringAsync("token", $"Bearer {tokenString}");
+                await _localStorage.SetItemAsStringAsync("token", $"{tokenString}");
             }
 
             var user = new ClaimsPrincipal(identity);
