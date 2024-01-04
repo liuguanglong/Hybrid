@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Linq;
+using Supabase.Gotrue.Interfaces;
+using Supabase.Gotrue;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -14,23 +16,22 @@ namespace Hybrid.Server.Controllers
     [ApiController]
     public class LoginController : ControllerBase
     {
+        private readonly IGotrueAdminClient<User> _client;
         private readonly IConfiguration Configuration;
-        private readonly Supabase.Client _client;
 
         private readonly String ServiceKey;
         public LoginController(
-            Supabase.Client client,
+            IGotrueAdminClient<User> client,
             IConfiguration configuration)
         {
             _client = client;
             Configuration = configuration;
-            ServiceKey = Configuration["SupaServer:ServiceToken"];
         }
 
         [HttpPost(Name = "login")]
         public async Task<IActionResult> Login([FromBody]String jwt)
         {
-            var user = await _client.AdminAuth(ServiceKey).GetUser(jwt);
+            var user = await _client.GetUser(jwt);
             if (user == null) {
                 return Unauthorized();
             }

@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Supabase.Gotrue;
+using Supabase.Gotrue.Interfaces;
+using System;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,8 +14,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped<Supabase.Client>(
-    provider => new Supabase.Client(
+Supabase.Client client = new Supabase.Client(
         builder.Configuration["SupaServer:Url"],
         builder.Configuration["SupaServer:Key"],
         new Supabase.SupabaseOptions
@@ -20,7 +22,17 @@ builder.Services.AddScoped<Supabase.Client>(
             AutoRefreshToken = true,
             AutoConnectRealtime = true
         }
-    )
+);
+
+await client.Auth.SignIn(builder.Configuration["SupaServer:ServiceAccount"], builder.Configuration["SupaServer:ServicePassword"]);
+IGotrueAdminClient<User> amdinClient = client.AdminAuth(builder.Configuration["SupaServer:Key"]);
+
+builder.Services.AddScoped<Supabase.Client>(
+   provider => client
+);
+
+builder.Services.AddScoped<IGotrueAdminClient<User>>(
+   provider => amdinClient
 );
 
 builder.Services.AddAuthentication(o =>
