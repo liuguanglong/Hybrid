@@ -4,7 +4,6 @@
 @using Hybrid.Web.Shared
 @using Hybrid.CQRS
 
-@inject HttpClient Http
 @inject CommandService serviceCommand;
 
 @if (_bLoaded == true && (String.IsNullOrEmpty(screenName) == false))

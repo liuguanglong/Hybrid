@@ -14,6 +14,12 @@ namespace Hybrid.Web.Pages
         [Inject]
         public PluginStateService pluginService { get; set; }
 
+        [Inject]
+        public IPackageRepository repo { get; set; }
+
+        [Inject]
+        public Interop DOMinterop {get;set;}
+
         protected override async Task OnInitializedAsync()
         {
             packages = pluginService.GetPackages();

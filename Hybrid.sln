@@ -13,7 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hybrid.Web.Shared", "Hybrid
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hybrid.Web.FormEngine", "Hybrid.Web.FormEngine\Hybrid.Web.FormEngine.csproj", "{9B15B038-F369-44F7-9BC9-979907BF49F5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hybrid.Web.PlugIn", "Hybrid.Web.PlugIn\Hybrid.Web.PlugIn.csproj", "{46953851-3A4C-409E-93A5-37A60A9BD87A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hybrid.Web.PlugIn", "Hybrid.Web.PlugIn\Hybrid.Web.PlugIn.csproj", "{46953851-3A4C-409E-93A5-37A60A9BD87A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hybrid.Server", "Hybrid.Server\Hybrid.Server.csproj", "{A0775212-75CA-4B87-B6FF-9E78D0B43295}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{46953851-3A4C-409E-93A5-37A60A9BD87A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{46953851-3A4C-409E-93A5-37A60A9BD87A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{46953851-3A4C-409E-93A5-37A60A9BD87A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0775212-75CA-4B87-B6FF-9E78D0B43295}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0775212-75CA-4B87-B6FF-9E78D0B43295}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0775212-75CA-4B87-B6FF-9E78D0B43295}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0775212-75CA-4B87-B6FF-9E78D0B43295}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
