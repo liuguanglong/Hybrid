@@ -1,6 +1,3 @@
-using Microsoft.AspNetCore.DataProtection.KeyManagement;
-using System;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;

@@ -10,7 +10,7 @@ using System.Text.Json.Nodes;
 namespace Hybrid.Server.Controllers
 {
 
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class LoginController : ControllerBase
     {
@@ -27,8 +27,7 @@ namespace Hybrid.Server.Controllers
             ServiceKey = Configuration["SupaServer:ServiceToken"];
         }
 
-        [HttpPost]
-        [Route("login")]
+        [HttpPost(Name = "login")]
         public async Task<IActionResult> Login([FromBody]String jwt)
         {
             var user = await _client.AdminAuth(ServiceKey).GetUser(jwt);
