@@ -7,6 +7,7 @@ using Hybrid.Web.Service;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.Net.Http.Headers;
 using MudBlazor.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -26,10 +27,10 @@ builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>
     );
 builder.Services.AddAuthorizationCore();
 
-var url = "https://gssfvpfhwmrwdqjlncij.supabase.co";
-String urlGraphql = "https://gssfvpfhwmrwdqjlncij.supabase.co/graphql/v1";
-String urlRestful = "https://gssfvpfhwmrwdqjlncij.supabase.co/rest/v1/rpc/";
-String key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdzc2Z2cGZod21yd2RxamxuY2lqIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTY0NDU1OTMsImV4cCI6MjAxMjAyMTU5M30.oelS4Uht9MrQ2daG-KR8yERstAgL9K0JI7y_FR_F2_E";
+String url = builder.Configuration["SupaBase:Url"];
+String urlGraphql = builder.Configuration["SupaBase:GraphqlUrl"];
+String urlRestful = builder.Configuration["SupaBase:RestfulServiceUrl"];
+String key = builder.Configuration["SupaBase:Key"];
 
 builder.Services.AddScoped<Supabase.Client>(
     provider => new Supabase.Client(
@@ -55,5 +56,13 @@ builder.Services.AddScoped(i =>
 builder.Services.AddScoped<IPackageRepository, PackageRepository>();
 builder.Services.AddScoped<Interop>();
 builder.Services.AddSingleton<PluginStateService>(new PluginStateService());
+
+String urlHyridServer = builder.Configuration["HybridServer:Url"];
+builder.Services.AddHttpClient("HybridServer", httpClient =>
+{
+    httpClient.BaseAddress = new Uri(urlHyridServer);
+    httpClient.DefaultRequestHeaders.Add(
+        HeaderNames.Accept, "application/json");
+});
 
 await builder.Build().RunAsync();

@@ -10,6 +10,8 @@
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Net.Http.Headers" Version="8.0.0" />
 		<PackageReference Include="MudBlazor" Version="6.12.0" />
 		<PackageReference Include="Blazored.LocalStorage" Version="4.4.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.0" />
@@ -20,6 +22,12 @@
 	  <ProjectReference Include="..\Hybrid.CQRS\Hybrid.CQRS.csproj" />
 	  <ProjectReference Include="..\Hybrid.Web.FormEngine\Hybrid.Web.FormEngine.csproj" />
 	  <ProjectReference Include="..\Hybrid.Web.PlugIn\Hybrid.Web.PlugIn.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Update="wwwroot\appsettings.json">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
 	</ItemGroup>
 	
 	
