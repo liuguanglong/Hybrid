@@ -32,7 +32,9 @@ namespace Hybrid.Server.Controllers
             List<UserInfo> result = new List<UserInfo>();
             foreach (var usr in users.Users)
             {
-                UserInfo userInfo = new UserInfo { Id = usr.Id, Email = usr.Email, CreatedAt = usr.CreatedAt };
+                UserInfo userInfo = new UserInfo { Id = usr.Id, Email = usr.Email, 
+                    //CreatedAt = usr.CreatedAt 
+                };
                 JArray roles = (JArray)usr.AppMetadata["role"];
                 List<String> listrole = new List<String>();
                 foreach (var r in roles)
@@ -58,15 +60,6 @@ namespace Hybrid.Server.Controllers
                 attributes.AppMetadata["role"] = role;
                 await _client.UpdateUserById(userInfo.Id, attributes);
             }
-        }
-
-        [HttpPost("UpdatePassword")]
-        public async Task UpdatePassworAsync([FromBody]UserInfo userInfo)
-        {
-            UserAttributes usr = new UserAttributes();
-            usr.Email = userInfo.Email;
-            usr.Password = userInfo.Password;
-            await _client.Update(usr);
         }
     }
 }

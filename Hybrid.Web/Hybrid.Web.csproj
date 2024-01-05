@@ -20,6 +20,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Hybrid.CQRS\Hybrid.CQRS.csproj" />
+	  <ProjectReference Include="..\Hybrid.Service.Shared\Hybrid.Service.Shared.csproj" />
 	  <ProjectReference Include="..\Hybrid.Web.FormEngine\Hybrid.Web.FormEngine.csproj" />
 	  <ProjectReference Include="..\Hybrid.Web.PlugIn\Hybrid.Web.PlugIn.csproj" />
 	</ItemGroup>

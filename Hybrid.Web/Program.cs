@@ -7,6 +7,7 @@ using Hybrid.Web.Service;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using MudBlazor.Services;
 
@@ -64,5 +65,7 @@ builder.Services.AddHttpClient("HybridServer", httpClient =>
     httpClient.DefaultRequestHeaders.Add(
         HeaderNames.Accept, "application/json");
 });
+
+builder.Services.AddScoped<UserService>();
 
 await builder.Build().RunAsync();

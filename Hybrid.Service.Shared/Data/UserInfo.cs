@@ -11,9 +11,13 @@ namespace Hybrid.Service.Shared.Data
     {
         public string? Id { get; set; }
         public string? Email { get; set; }
-        public DateTime CreatedAt { get; set; }
+        //public DateTime CreatedAt { get; set; }
         public String[]? Roles { get; set; }
         public String? Password { get; set; }
 
+        public String getRoles()
+        {
+            return String.Join("|", Roles); 
+        }
     }
 }

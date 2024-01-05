@@ -11,6 +11,5 @@ namespace Hybrid.Service.Shared.Interface
     {
         Task<UserInfo[]?> GeUsersAsync();
         Task UpdateRolesAsync(UserInfo userInfo);
-        Task UpdatePassworAsync(UserInfo userInfo);
     }
 }

@@ -1,0 +1,34 @@
+﻿@using Hybrid.Service.Shared
+@page "/UserCenter"
+
+<AuthorizeView Roles="Manager">
+<Authorized>
+<h1>UserCenter</h1>
+
+        <MudTable T="Hybrid.Service.Shared.Data.UserInfo" Items="@users" Context="user">
+    <HeaderContent>
+            <MudTh>ID</MudTh>
+            <MudTh>Email</MudTh>
+            <MudTh>Roles</MudTh>
+            <MudTh>Operation</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+                <MudTd DataLabel="Module">@user.Id</MudTd>
+                <MudTd DataLabel="Loaded">@user.Email</MudTd>
+                    <MudTd DataLabel="Roles">@user.getRoles()</MudTd>
+                    <MudTd DataLabel="Operation">
+                    <MudButton Size="Size.Small" Color="Color.Primary" @onclick="() => Edit(user)">Edit</MudButton>
+                        <MudButton Size="Size.Small" Color="Color.Primary" @onclick="() => Edit(user)">Remove</MudButton>
+                </MudTd>
+    </RowTemplate>
+</MudTable>
+ </Authorized>
+ <NotAuthorized>
+                <MudText Typo="Typo.body1">You are not allowed to see this content</MudText>
+                <br>
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" Link="/login">Login</MudButton>
+</NotAuthorized>
+</AuthorizeView>
+@code {
+
+}
