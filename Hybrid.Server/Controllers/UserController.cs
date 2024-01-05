@@ -61,7 +61,7 @@ namespace Hybrid.Server.Controllers
         }
 
         [HttpPost("UpdatePassword")]
-        public async Task UpdatePassworAsync(UserInfo userInfo)
+        public async Task UpdatePassworAsync([FromBody]UserInfo userInfo)
         {
             UserAttributes usr = new UserAttributes();
             usr.Email = userInfo.Email;
