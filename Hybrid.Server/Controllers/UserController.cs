@@ -59,5 +59,14 @@ namespace Hybrid.Server.Controllers
                 await _client.UpdateUserById(userInfo.Id, attributes);
             }
         }
+
+        [HttpPost("UpdatePassword")]
+        public async Task UpdatePassworAsync(UserInfo userInfo)
+        {
+            UserAttributes usr = new UserAttributes();
+            usr.Email = userInfo.Email;
+            usr.Password = userInfo.Password;
+            await _client.Update(usr);
+        }
     }
 }
