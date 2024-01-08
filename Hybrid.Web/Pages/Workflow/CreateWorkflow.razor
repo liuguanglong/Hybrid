@@ -1,0 +1,48 @@
+﻿@page "/CreateWorkflow"
+
+<h3>CreateWorkflow</h3>
+
+<MudGrid>
+    <MudItem xs="12" sm="7">
+        <MudPaper Class="pa-4">
+            <MudForm @ref="form" Model="@data">
+                <MudTextField T="string" Label="Name" Value=@(data.getValue<String>("Name")) ValueChanged=@(v=>data.changeValue("Name",v))
+                    Required="true" RequiredError="Workflow name is required!" />
+                <MudTextField T="string" Label="Version" Value=@(data.getValue<String>("Version")) ValueChanged=@(v=>data.changeValue("Version",v))
+                    Required="true" RequiredError="Version is required!" />
+                <MudTextField T="string" Label="Data Type" Value=@(data.getValue<String>("DataType")) ValueChanged=@(v=>data.changeValue("DataType",v))
+                    Required="true" RequiredError="Data Type is required!" />
+                <MudPaper Class="d-flex flex-row flex-grow-1 gap-4" Elevation="0">
+                    <MudButton Variant="Variant.Text" Color="Color.Primary"
+                               OnClick=@(()=>AddStep())>Add</MudButton>
+                </MudPaper>
+                <MudPaper Class="d-flex flex-wrap  gap-x-2 gap-y-2" Elevation="0">
+                    @{
+                        @foreach(var step in data.getList("Steps"))
+                        {
+                            <MudPaper Class="d-flex flex-column gap-1" Height="300px" Width="300px" Elevation="0">
+                                <MudCard>
+                                    <MudCardContent>
+                                        <MudTextField T="String" Margin="Margin.Dense" Value=@(step.getValue<String>("Name"))
+                                                      Label="Name" Variant="Variant.Text" ReadOnly=true>
+                                        </MudTextField>
+                                        <MudTextField T="String" Margin="Margin.Dense" Value=@(step.getValue<String>("StepType"))
+                                                      Label="Step Type" Variant="Variant.Text" ReadOnly=true>
+                                        </MudTextField>
+                                        <MudTextField T="String" Margin="Margin.Dense" Value=@(step.getValue<String>("NextStepId"))
+                                                      Label="Next Step" Variant="Variant.Text" ReadOnly=true>
+                                        </MudTextField>
+                                        <MudButton Variant="Variant.Text" Color="Color.Primary"
+                                                   OnClick=@(()=>EditStep(step))>Edit</MudButton>
+                                    </MudCardContent>
+                                </MudCard>
+                            </MudPaper>
+                        }
+                    }
+                </MudPaper>
+            </MudForm>
+        </MudPaper>
+        <MudPaper Class="pa-4 mt-4">
+        </MudPaper>
+    </MudItem>
+</MudGrid>

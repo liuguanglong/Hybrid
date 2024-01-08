@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json.Nodes;
 using System.Text.Unicode;
+using WorkflowCore.Interface;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,8 +20,6 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.PropertyNamingPolicy = null;//解决后端传到前端全大写
     options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);//解决后端返回数据中文被编码
 });
-
-
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -83,23 +82,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
                 }
               );
 
-//if (builder.Environment.IsDevelopment())
-//{
-//    builder.Services.AddHttpsRedirection(options =>
-//    {
-//        options.RedirectStatusCode = StatusCodes.Status308PermanentRedirect;
-//        options.HttpsPort = 5094;
-//    });
-//}
-//else
-//{
-//    builder.Services.AddHttpsRedirection(options =>
-//    {
-//        options.RedirectStatusCode = StatusCodes.Status308PermanentRedirect;
-//        options.HttpsPort = 443;
-//    });
-//}
-
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(
@@ -109,6 +91,10 @@ builder.Services.AddCors(options =>
                       });
 });
 
+var conn = builder.Configuration["Workflow:DBConnection"].ToString();
+builder.Services.AddWorkflow(
+    x => x.UsePostgreSQL(conn, false, false));
+builder.Services.AddWorkflowDSL();
 var app = builder.Build();
 app.UseCors();
 
@@ -120,8 +106,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseAuthorization();
-
-
 app.MapControllers();
+
+var host = app.Services.GetService<IWorkflowHost>();
+host.Start();
 
 app.Run();

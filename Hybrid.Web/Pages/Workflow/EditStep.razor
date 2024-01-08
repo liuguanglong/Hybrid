@@ -1,0 +1,98 @@
+﻿
+<MudDialog>
+    <DialogContent>
+<MudGrid >
+    <MudItem xs="12" sm="7">
+                <MudPaper Class="pa-4" Height="800px" Width="700px">
+            <MudForm Model="@data">
+                <MudTextField T="string" Label="Name" Value=@(data.getValue<String>("Name")) ValueChanged=@(v=>data.changeValue("Name",v))
+                              Required="true" RequiredError="Step name is required!" />
+                <MudTextField T="Int32" Label="Version" Value=@(data.getValue<Int32>("Index")) ValueChanged=@(v=>data.changeValue("Index",v))
+                              Required="true" RequiredError="Index is required!" />
+                <MudTextField T="string" Label="Next StepId" Value=@(data.getValue<String>("NextStepId")) ValueChanged=@(v=>data.changeValue("NextStepId",v))
+                              Required="true" RequiredError="Next StepId is required!" />
+                <MudSelect Dense="true" T="string" Label="Step Type" Variant="Variant.Text" ValueChanged="v=>StepTypeChanged(v)">
+                            @foreach (var item in stepTypes)
+                            {
+                                <MudSelectItem Value="@item.Item1">@item.Item2</MudSelectItem>
+                            }
+                        </MudSelect>
+
+                        <MudTabs Outlined="true" Position="Position.Top" Rounded="true" Border="true"
+                                 ApplyEffectsToContainer="true" Class="mt-8" PanelClass="pa-6">
+                            <MudTabPanel Text="Inputs">
+                                <MudPaper Class=" d-flex flex-column gap-4" Elevation="0">
+                                    <MudField Label="Inputs" Variant="Variant.Outlined">
+                                        <MudPaper Class="d-flex flex-row flex-grow-1 gap-4" Elevation="0">
+                                            <MudButton Variant="Variant.Text" Color="Color.Primary"
+                                                       OnClick=@(()=>AddInputParam())>Add</MudButton>
+                                        </MudPaper>
+                                        <MudPaper Class="d-flex flex-wrap  gap-x-2 gap-y-2" Elevation="0">
+                                            @{
+                                                @foreach (var param in data.getList("Inputs"))
+                                                {
+                                                    <MudPaper Class="d-flex flex-column gap-1" Height="160px" Width="200px" Elevation="0">
+                                                        <MudCard>
+                                                            <MudCardContent>
+                                                                <MudTextField T="String" Margin="Margin.Dense" Value=@(param.getValue<String>("Source"))
+                                                                              Label="Name" Variant="Variant.Text" ReadOnly=true>
+                                                                </MudTextField>
+                                                                <MudTextField T="String" Margin="Margin.Dense" Value=@(param.getValue<String>("Target"))
+                                                                              Label="Step Type" Variant="Variant.Text" ReadOnly=true>
+                                                                </MudTextField>
+                                                                <MudButton Variant="Variant.Text" Color="Color.Primary"
+                                                                           OnClick=@(()=>EditParam(param))>Edit</MudButton>
+                                                            </MudCardContent>
+                                                        </MudCard>
+                                                    </MudPaper>
+                                                }
+                                            }
+                                        </MudPaper>
+                                    </MudField>
+                                </MudPaper>
+                            </MudTabPanel>
+                            <MudTabPanel Text="Outputs">
+                                <MudPaper Class=" d-flex flex-column gap-4" Width="550px" Height="250px" Elevation="0">
+                                    <MudField Label="Outputs" Variant="Variant.Outlined">
+                                        <MudPaper Class="d-flex flex-row flex-grow-1 gap-4" Elevation="0">
+                                            <MudButton Variant="Variant.Text" Color="Color.Primary"
+                                                       OnClick=@(()=>AddInputParam())>Add</MudButton>
+                                        </MudPaper>
+                                        <MudPaper Class="d-flex flex-wrap  gap-x-2 gap-y-2" Elevation="0">
+                                            @{
+                                                @foreach (var param in data.getList("Outputs"))
+                                                {
+                                                    <MudPaper Class="d-flex flex-column gap-1" Height="160px" Width="200px" Elevation="0">
+                                                        <MudCard>
+                                                            <MudCardContent>
+                                                                <MudTextField T="String" Margin="Margin.Dense" Value=@(param.getValue<String>("Source"))
+                                                                              Label="Name" Variant="Variant.Text" ReadOnly=true>
+                                                                </MudTextField>
+                                                                <MudTextField T="String" Margin="Margin.Dense" Value=@(param.getValue<String>("Target"))
+                                                                              Label="Step Type" Variant="Variant.Text" ReadOnly=true>
+                                                                </MudTextField>
+                                                                <MudButton Variant="Variant.Text" Color="Color.Primary"
+                                                                           OnClick=@(()=>EditParam(param))>Edit</MudButton>
+                                                            </MudCardContent>
+                                                        </MudCard>
+                                                    </MudPaper>
+                                                }
+                                            }
+                                        </MudPaper>
+                                    </MudField>
+                                </MudPaper>
+
+                            </MudTabPanel>
+                            <MudTabPanel Text="Branches">
+                                <MudText>Content Three</MudText>
+                            </MudTabPanel>
+                        </MudTabs>
+
+                    </MudForm>
+        </MudPaper>
+        <MudPaper Class="pa-4 mt-4">
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+    </DialogContent>
+</MudDialog>
